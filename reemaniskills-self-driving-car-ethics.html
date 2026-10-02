@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Should a Self-Driving Car Choose Who to Save?</title>
+<style>
+:root{
+  --bg:#fdfaf5; --ink:#2b2620; --card:#ffffff; --accent:#c0533e;
+  --green:#3f7d4f; --blue:#3a6ea5; --yellow:#c8912b; --line:#e6ddcf;
+  box-sizing:border-box; padding-top:env(safe-area-inset-top,0px); padding-bottom:env(safe-area-inset-bottom,0px);
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#1c1a17; --ink:#f0ebe2; --card:#26231e; --line:#3a352c;
+  }
+}
+:root[data-theme="dark"]{ --bg:#1c1a17; --ink:#f0ebe2; --card:#26231e; --line:#3a352c; }
+*{box-sizing:border-box}
+html,body{height:100%; margin:0}
+body{
+  background:var(--bg); color:var(--ink);
+  font-family:Georgia,'Times New Roman',serif;
+  display:flex; flex-direction:column; align-items:center;
+  min-height:100%;
+}
+.deck{width:100%; max-width:760px; padding:24px 20px 10px; flex:1; display:flex; flex-direction:column;}
+.slide{display:none; flex:1; flex-direction:column; animation:fade .25s ease;}
+.slide.active{display:flex}
+@keyframes fade{from{opacity:0; transform:translateY(6px)} to{opacity:1; transform:none}}
+.tag{font-family:-apple-system,Helvetica,Arial,sans-serif; font-size:12px; letter-spacing:.12em; text-transform:uppercase; color:var(--accent); font-weight:600; margin-bottom:6px;}
+h1{font-size:clamp(24px,5vw,34px); line-height:1.2; margin:0 0 12px;}
+h2{font-size:clamp(20px,4vw,26px); margin:0 0 14px;}
+p{font-size:16px; line-height:1.55; margin:0 0 12px;}
+.scenario{background:var(--card); border:1px solid var(--line); border-radius:12px; padding:18px 20px; font-size:16px; line-height:1.6;}
+.choices{display:grid; gap:12px; margin-top:10px;}
+.choice-btn{
+  font-family:-apple-system,Helvetica,Arial,sans-serif; text-align:left; cursor:pointer;
+  border-radius:10px; padding:14px 16px; border:1px solid var(--line); background:var(--card);
+  color:var(--ink); font-size:15px; font-weight:600; display:flex; gap:10px; align-items:center;
+}
+.dot{width:10px; height:10px; border-radius:50%; flex-shrink:0;}
+.g{background:var(--green)} .b{background:var(--blue)} .y{background:var(--yellow)}
+.reveal{display:none; margin-top:8px; padding:12px 14px; border-radius:8px; background:var(--bg); border:1px dashed var(--line); font-size:14px; line-height:1.5;}
+.reveal.show{display:block}
+.quote{font-style:italic; margin:0 0 4px;}
+.label{font-family:-apple-system,Helvetica,Arial,sans-serif; font-size:12px; text-transform:uppercase; letter-spacing:.06em; color:var(--accent); font-weight:600;}
+.followup{background:var(--card); border:1px solid var(--line); border-radius:12px; padding:16px 18px; margin-bottom:14px;}
+.ask-btn{margin-top:8px; font-family:-apple-system,Helvetica,Arial,sans-serif; font-size:13px; font-weight:600; padding:8px 14px; border-radius:20px; border:1px solid var(--accent); background:transparent; color:var(--accent); cursor:pointer;}
+.who-grid{display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-top:8px;}
+@media(max-width:480px){.who-grid{grid-template-columns:1fr}}
+.who-card{background:var(--card); border:1px solid var(--line); border-radius:10px; padding:12px 14px; cursor:pointer;}
+.who-card b{font-family:-apple-system,Helvetica,Arial,sans-serif; font-size:14px;}
+.who-reveal{display:none; font-size:13px; margin-top:6px; color:var(--ink); opacity:.85;}
+.who-reveal.show{display:block}
+.insight-box{background:var(--card); border:2px solid var(--accent); border-radius:12px; padding:20px; font-size:17px; line-height:1.6; text-align:center; margin-top:16px;}
+.challenge{background:var(--card); border:1px solid var(--line); border-radius:12px; padding:22px; text-align:center; margin-top:10px;}
+textarea{width:100%; min-height:90px; margin-top:14px; padding:10px; border-radius:8px; border:1px solid var(--line); background:var(--bg); color:var(--ink); font-family:inherit; font-size:15px; resize:vertical;}
+.nav{
+  font-family:-apple-system,Helvetica,Arial,sans-serif;
+  display:flex; align-items:center; justify-content:space-between;
+  padding:14px 4px calc(14px + env(safe-area-inset-bottom,0px));
+  max-width:760px; width:100%;
+}
+.nav button{
+  font-size:14px; font-weight:600; padding:9px 18px; border-radius:20px; border:1px solid var(--line);
+  background:var(--card); color:var(--ink); cursor:pointer;
+}
+.nav button:disabled{opacity:.35; cursor:default}
+.dots{display:flex; gap:6px;}
+.pip{width:7px; height:7px; border-radius:50%; background:var(--line);}
+.pip.on{background:var(--accent);}
+</style>
+</head>
+<body>
+<div class="deck" id="deck">
+
+  <section class="slide active">
+    <div class="tag">Ethics & AI · Interactive lesson</div>
+    <h1>Should a Self-Driving Car Choose Who to Save?</h1>
+    <p>A self-driving car's AI has to make split-second decisions. But what happens when every option causes harm? Today we're going to think like the engineers, ethicists, and lawmakers who actually have to answer this.</p>
+    <p>There's no single correct answer in this lesson — the goal is to build the best <em>reasoning</em> you can.</p>
+  </section>
+
+  <section class="slide">
+    <div class="tag">The dilemma</div>
+    <h2>Picture this</h2>
+    <div class="scenario">
+      A self-driving car is about to crash. It has two choices, and it must pick one:<br><br>
+      🅰️ Protect the <b>one passenger</b> inside the car.<br>
+      🅱️ Swerve to avoid the passenger, but harm <b>three pedestrians</b> instead.<br><br>
+      There's no time to stop. No third option. What should the AI do — and why?
+    </div>
+  </section>
+
+  <section class="slide">
+    <div class="tag">Tap each option</div>
+    <h2>What would you choose?</h2>
+    <div class="choices">
+      <button class="choice-btn" onclick="toggle('r1')"><span class="dot g"></span>Protect the passenger</button>
+      <div class="reveal" id="r1">
+        <div class="label">Responsibility / Trust</div>
+        <p class="quote">"The person bought the car and trusted it to keep them safe."</p>
+        <div class="label">Role-based reasoning</div>
+        <p class="quote">"The AI is part of the car — its first job is protecting the person inside."</p>
+      </div>
+
+      <button class="choice-btn" onclick="toggle('r2')"><span class="dot b"></span>Save the greater number</button>
+      <div class="reveal" id="r2">
+        <div class="label">Consequence-based</div>
+        <p class="quote">"If one person can be saved instead of three, save three."</p>
+        <div class="label">Fairness</div>
+        <p class="quote">"The AI shouldn't give special treatment to the car's owner."</p>
+      </div>
+
+      <button class="choice-btn" onclick="toggle('r3')"><span class="dot y"></span>Reduce harm to everyone</button>
+      <div class="reveal" id="r3">
+        <div class="label">Problem-solving</div>
+        <p class="quote">"Look for another option instead of choosing who gets hurt."</p>
+        <div class="label">Creative thinking</div>
+        <p class="quote">"Maybe it should brake, or steer somewhere fewer people are at risk."</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="slide">
+    <div class="tag">Curveballs</div>
+    <h2>Two tricky answers</h2>
+    <div class="followup">
+      <p><b>Student says:</b> "The AI should not decide who lives or dies."</p>
+      <button class="ask-btn" onclick="toggle('f1')">Ask the follow-up</button>
+      <div class="reveal" id="f1">If the accident is <b>unavoidable</b> and the AI <b>must</b> choose an action — what rule should it follow? (This moves them from refusing to choose, to actually reasoning.)</div>
+    </div>
+    <div class="followup">
+      <p><b>Student says:</b> "It depends on who caused the accident."</p>
+      <button class="ask-btn" onclick="toggle('f2')">Ask the follow-up</button>
+      <div class="reveal" id="f2">Should the AI <b>punish</b> the person who caused the accident, or just try to <b>prevent harm</b>? (This introduces justice vs. safety.)</div>
+    </div>
+  </section>
+
+  <section class="slide">
+    <div class="tag">Tap each role</div>
+    <h2>Who is responsible if the AI makes a mistake?</h2>
+    <div class="who-grid">
+      <div class="who-card" onclick="toggle('w1')"><b>The programmer</b><div class="who-reveal" id="w1">"They created the instructions."</div></div>
+      <div class="who-card" onclick="toggle('w2')"><b>The company</b><div class="who-reveal" id="w2">"They made and sold the car — they should ensure it's safe."</div></div>
+      <div class="who-card" onclick="toggle('w3')"><b>The owner</b><div class="who-reveal" id="w3">"They chose to use the self-driving system."</div></div>
+      <div class="who-card" onclick="toggle('w4')"><b>The AI itself</b><div class="who-reveal" id="w4">"It made the decision — so maybe it's responsible."</div></div>
+    </div>
+    <p style="margin-top:16px;"><b>Then ask:</b> Can a machine really understand right and wrong — or is it just following human instructions?</p>
+  </section>
+
+  <section class="slide">
+    <div class="tag">The key insight</div>
+    <h2>What we want them to reach</h2>
+    <div class="insight-box">"The AI doesn't create its own values.<br>Humans decide what the AI should prioritize."</div>
+  </section>
+
+  <section class="slide">
+    <div class="tag">Natural Intelligence Challenge</div>
+    <h2>Your turn</h2>
+    <div class="challenge">
+      <p style="font-size:18px;"><b>If you were programming the AI, what ONE rule would you teach it — and why?</b></p>
+      <textarea id="answerBox" placeholder="Write your rule and your reasoning here..."></textarea>
+      <button class="ask-btn" id="copyBtn" onclick="copyAnswer()" style="margin-top:10px;">Copy my answer</button>
+      <p id="copyStatus" style="margin-top:8px; font-size:13px; min-height:16px; color:var(--green);"></p>
+      <p style="margin-top:4px; font-size:13px; opacity:.7;">Copy your answer, then paste it wherever your teacher tells you (a shared doc, form, or chat).</p>
+      <p style="margin-top:6px; font-size:13px; opacity:.7;">There's no single correct answer — the quality of your reasoning is what matters.</p>
+    </div>
+  </section>
+
+</div>
+
+<div class="nav">
+  <button id="prevBtn" onclick="go(-1)">Back</button>
+  <div class="dots" id="dots"></div>
+  <button id="nextBtn" onclick="go(1)">Next</button>
+</div>
+
+<script>
+const slides = document.querySelectorAll('.slide');
+let i = 0;
+const dotsEl = document.getElementById('dots');
+slides.forEach((_,idx)=>{
+  const d = document.createElement('div');
+  d.className = 'pip' + (idx===0?' on':'');
+  dotsEl.appendChild(d);
+});
+function render(){
+  slides.forEach((s,idx)=>s.classList.toggle('active', idx===i));
+  [...dotsEl.children].forEach((d,idx)=>d.classList.toggle('on', idx===i));
+  document.getElementById('prevBtn').disabled = i===0;
+  document.getElementById('nextBtn').disabled = i===slides.length-1;
+}
+function go(d){ i = Math.min(slides.length-1, Math.max(0, i+d)); render(); }
+function toggle(id){ document.getElementById(id).classList.toggle('show'); }
+async function copyAnswer(){
+  const box = document.getElementById('answerBox');
+  const status = document.getElementById('copyStatus');
+  const text = box.value.trim();
+  if(!text){ status.style.color = 'var(--accent)'; status.textContent = 'Write something first!'; return; }
+  try{
+    await navigator.clipboard.writeText(text);
+    status.style.color = 'var(--green)';
+    status.textContent = 'Copied! Now paste it wherever your teacher asks.';
+  }catch(err){
+    box.select();
+    box.setSelectionRange(0, text.length);
+    status.style.color = 'var(--accent)';
+    status.textContent = 'Could not auto-copy — your text is selected, press Ctrl/Cmd+C.';
+  }
+}
+render();
+document.addEventListener('keydown', e=>{
+  if(e.key==='ArrowRight') go(1);
+  if(e.key==='ArrowLeft') go(-1);
+});
+</script>
+</body>
+</html>
